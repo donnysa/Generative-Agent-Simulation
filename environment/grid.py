@@ -20,8 +20,6 @@ class Grid:
         assert width > 0 and height > 0, "Grid dimensions must be greater than 0."
 
         self.grid_size = grid_size
-        self.grid_width = width // grid_size
-        self.grid_height = height // grid_size
 
         # # Initialize the grid with Tile objects. Right now they are all grass.
         # self.grid = [[Tile(x, y, "grass") for y in range(self.grid_height)] for x in range(self.grid_width)]
@@ -42,6 +40,32 @@ class Grid:
         for row in self.grid:
             for tile in row:
                 tile.draw(surface, self.grid_size)
+
+    # Utility methods
+
+    @staticmethod
+    def screen_to_board(x, y, grid_size):
+        """
+        Converts screen coordinates (pixels) to board coordinates (grid cells).
+        x, y: screen coordinates.
+        grid_size: size of each grid cell.
+        Returns a tuple (board_x, board_y) representing the board coordinates.
+        """
+        board_x = x // grid_size
+        board_y = y // grid_size
+        return board_x, board_y
+
+    @staticmethod
+    def board_to_screen(board_x, board_y, grid_size):
+        """
+        Converts board coordinates (grid cells) to screen coordinates (pixels).
+        board_x, board_y: board coordinates.
+        grid_size: size of each grid cell.
+        Returns a tuple (x, y) representing the screen coordinates.
+        """
+        x = board_x * grid_size
+        y = board_y * grid_size
+        return x, y
 
 class Tile:
     """

@@ -10,3 +10,5 @@ This project aims to create generative agents—computational software agents th
 
 * Python 3.8 or higher
 * Pygame 2.0.1 or higher
+
+Thanks to shubibubi for the NPC assets.

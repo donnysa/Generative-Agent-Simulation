@@ -9,9 +9,10 @@ Author: Donny Sanders
 """
 import pygame
 
-from agent.memory_stream import MemoryStream
-from agent.planning import Planning
-from agent.reflection import Reflection
+from agents.memory_stream import MemoryStream
+from agents.planning import Planning
+from agents.reflection import Reflection
+from environment.grid import Grid
 
 
 class Agent:
@@ -20,8 +21,6 @@ class Agent:
         Initialize agent with given position, name, occupation, and relationships.
         - x, y: initial position of the agent in the environment.
         - name: name of the agent.
-        - occupation: occupation of the agent.
-        - relationships: dictionary containing relationships of the agent with others.
         """
         self.x = x
         self.y = y
@@ -30,12 +29,25 @@ class Agent:
         self.reflection = Reflection()
         self.planning = Planning()
 
-    def draw(self, window):
+        try:
+            self.texture = pygame.image.load(os.path.join("resources", "images", name + ".png"))
+        except pygame.error:
+            raise ValueError(f"Failed to load texture for agent '{self.name}'")
+
+    def draw(self, window, grid_size):
         """
         Draw agent in the provided window.
         - window: pygame window object where the agent needs to be drawn.
+        - grid_size: size of each grid cell.
         """
-        # pygame.draw.rect(window, AGENT_COLOR, (self.x*GRID_SIZE, self.y*GRID_SIZE, GRID_SIZE, GRID_SIZE))
+        screen_x, screen_y = Grid.board_to_screen(self.x, self.y, grid_size)
+
+        if self.texture is not None: 
+            # Scale the texture to the grid's size and draw it
+            texture = pygame.transform.scale(self.texture, (grid_size, grid_size))
+            window.blit(texture, (screen_x, screen_y))
+        else:
+            raise Exception("Agent texture is None")
 
     def move(self, dx, dy, environment):
         """
