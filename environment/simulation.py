@@ -4,6 +4,7 @@ Module containing the simulation in which the agents operate.
 Author: Donny Sanders
 """
 import pygame
+from agents.agent import Agent
 
 from util.json_parser import JsonParser
 
@@ -21,10 +22,15 @@ class Simulation:
         assert width > 0 and height > 0, "Simulation dimensions must be greater than 0."
 
         # List of objects to draw. Could be used to store agents, obstacles, etc.
-        self.drawables = [] 
+        self.drawables = []
+        self.agents = []
         
         self.grid = JsonParser.loadGrid(100, width, height)
         self.screen = screen
+
+        RobertoFilipe = Agent(3, 5, "Roberto Filipe")
+        self.agents.append(RobertoFilipe)
+        self.drawables.append(RobertoFilipe)
         
         self.running = True
 
@@ -59,3 +65,10 @@ class Simulation:
             self.update()
             self.draw()
             pygame.display.flip()
+
+    def resolve_agents(self):
+        """
+        Resolves all agent based interactions.
+        """
+        for agent in self.agents:
+            agent.state.execute(agent)

@@ -7,8 +7,9 @@ Park, J. S., O'Brien, J. C., Cai, C. J., Morris, M. R., Liang, P., & Bernstein, 
 
 Author: Donny Sanders
 """
+import os
 import pygame
-
+from agents.agent_state import IdleState
 from agents.memory_stream import MemoryStream
 from agents.planning import Planning
 from agents.reflection import Reflection
@@ -16,6 +17,7 @@ from environment.grid import Grid
 
 
 class Agent:
+
     def __init__(self, x, y, name):
         """
         Initialize agent with given position, name, occupation, and relationships.
@@ -28,11 +30,9 @@ class Agent:
         self.memory_stream = MemoryStream()
         self.reflection = Reflection()
         self.planning = Planning()
-
-        try:
-            self.texture = pygame.image.load(os.path.join("resources", "images", name + ".png"))
-        except pygame.error:
-            raise ValueError(f"Failed to load texture for agent '{self.name}'")
+        self.state = IdleState()
+        self.direction = "down"
+        self.sprite_sheet = self.load_sprite_sheet()
 
     def draw(self, window, grid_size):
         """
@@ -42,12 +42,21 @@ class Agent:
         """
         screen_x, screen_y = Grid.board_to_screen(self.x, self.y, grid_size)
 
-        if self.texture is not None: 
-            # Scale the texture to the grid's size and draw it
-            texture = pygame.transform.scale(self.texture, (grid_size, grid_size))
-            window.blit(texture, (screen_x, screen_y))
+        direction_index = {
+            'down': 0,
+            'up': 1,
+            'right': 2,
+            'left': 3,
+        }.get(self.direction, 0)
+
+        frame_index = self.state.current_frame if not isinstance(self.state, IdleState) else 0
+        sprite = self.sprite_sheet[direction_index][frame_index]
+
+        if sprite is not None: 
+            sprite = pygame.transform.scale(sprite, (grid_size, grid_size))  # Scale the sprite
+            window.blit(sprite, (screen_x, screen_y))
         else:
-            raise Exception("Agent texture is None")
+            raise Exception("Agent sprite is None")
 
     def move(self, dx, dy, environment):
         """
@@ -61,34 +70,35 @@ class Agent:
         self.x = new_x
         self.y = new_y
 
-    def interact(self, other_agent):
+    def change_state(self, new_state):
         """
-        Define interaction between this agent and another agent.
-        - other_agent: The agent with which the interaction happens.
+        Changes the agent's state to the given new state.
         """
-        pass
+        self.state.exit(self)
+        self.state = new_state
+        self.state.enter(self)
 
-    def reflect(self):
+    def load_sprite_sheet(self):
         """
-        Synthesize agent's memories.
+        Load the sprite sheet for the agent.
         """
-        pass
+        sprite_width, sprite_height = 32, 32
+        sprite_sheet = []
 
-    def plan(self):
-        """
-        Create plan based on agent's reflection and memories.
-        """
-        pass
+        # Remove spaces from the name for file parsing
+        sprite_name = self.name.replace(" ", "")
+        try:
+            sheet = pygame.image.load(os.path.join("resources", "images", "agents", f"{sprite_name}.png"))
+        except pygame.error:
+            raise ValueError(f"Failed to load sprite sheet for agent '{self.name}'")
 
-    def perform_action(self):
-        """
-        Perform action based on agent's plan.
-        """
-        pass
+        for row in range(4):
+            frames = []
+            for col in range(8):
+                x = col * sprite_width
+                y = row * sprite_height
+                sprite = sheet.subsurface(pygame.Rect(x, y, sprite_width, sprite_height))
+                frames.append(sprite)
+            sprite_sheet.append(frames)
 
-    def communicate(self, other_agent):
-        """
-        Communicate with other agents in natural language.
-        - other_agent: The agent with which communication happens.
-        """
-        pass
+        return sprite_sheet
