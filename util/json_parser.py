@@ -8,6 +8,21 @@ import os
 import environment.grid as env
 
 class JsonParser:
+
+    """
+    Loads game settings from a JSON file.
+    """
+    @staticmethod
+    def loadSettings():
+        """
+        Loads game settings from a JSON file.
+        """
+        with open(os.path.join("resources", "json", "settings.json"), 'r') as f:
+            settings = json.load(f)
+
+        # TODO
+        return settings
+
     """
     Loads a Grid object from a JSON file.
     """
@@ -20,7 +35,17 @@ class JsonParser:
         with open(os.path.join("resources", "json", "grid.json"), 'r') as f:
             raw_grid = json.load(f)
 
-        grid = env.Grid(grid_size, width, height)
+        # Determine grid size based on window size
+        num_rows = len(raw_grid)
+        num_cols = len(raw_grid[0]) if num_rows > 0 else 0
+
+        if num_rows == 0 or num_cols == 0:
+            raise ValueError("Grid size cannot be 0.")
+
+        grid_size_x = width // num_cols
+        grid_size_y = height // num_rows
+
+        grid = env.Grid(min(grid_size_x, grid_size_y), width, height)
         grid.grid = [[env.Tile(y, x, cell) for y, cell in enumerate(row)] for x, row in enumerate(raw_grid)]
 
         return grid
