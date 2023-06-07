@@ -5,7 +5,7 @@ Author: Donny Sanders
 """
 import pygame
 
-from environment.grid import Grid
+from util.json_parser import JsonParser
 
 class Simulation:
     """
@@ -23,7 +23,7 @@ class Simulation:
         # List of objects to draw. Could be used to store agents, obstacles, etc.
         self.drawables = [] 
         
-        self.grid = Grid(100, width, height) 
+        self.grid = JsonParser.loadGrid(100, width, height)
         self.screen = screen
         
         self.running = True

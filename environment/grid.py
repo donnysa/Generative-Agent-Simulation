@@ -23,8 +23,8 @@ class Grid:
         self.grid_width = width // grid_size
         self.grid_height = height // grid_size
 
-        # Initialize the grid with Tile objects
-        self.grid = [[Tile(x, y) for y in range(self.grid_height)] for x in range(self.grid_width)]
+        # # Initialize the grid with Tile objects. Right now they are all grass.
+        # self.grid = [[Tile(x, y, "grass") for y in range(self.grid_height)] for x in range(self.grid_width)]
 
     def get(self, x, y):
         """
@@ -47,23 +47,30 @@ class Tile:
     """
     Model class representing a drawable tile in the grid, with a texture and walkable property.
     """
-    def __init__(self, x, y, walkable=True, texture=None):
+
+    TEXTURES = {
+        0 : os.path.join("resources", "images", "grass.png"),
+        1 : os.path.join("resources", "images", "dirt.png"),
+    }
+
+    def __init__(self, x, y, type, walkable=True):
         """
         Initializes the tile.
         x, y: grid position of the tile.
+        type: type of the tile. Must be one of the keys in the TEXTURES dictionary.
         walkable: boolean indicating whether this tile can be walked on.
-        texture: path to image file to use as texture.
         """
         assert isinstance(x, int) and isinstance(y, int), "Tile coordinates must be integers."
         assert isinstance(walkable, bool), "Walkable must be a boolean."
-        if texture is not None:
-            assert isinstance(texture, str), "Texture path must be a string."
-            assert os.path.isfile(texture), "Texture file does not exist."
+        assert type in self.TEXTURES, f"Invalid tile type '{type}'. Valid types are {list(self.TEXTURES.keys())}."
             
         self.x = x
         self.y = y
         self.walkable = walkable
-        self.texture = pygame.image.load(texture) if texture is not None else None  # load texture from file
+        try:
+            self.texture = pygame.image.load(self.TEXTURES[type])
+        except pygame.error:
+            raise ValueError(f"Failed to load texture for tile type '{type}'")
 
     def draw(self, surface, size):
         """
@@ -78,3 +85,4 @@ class Tile:
             # If no texture, fill the tile with a default color (green)
             rect = pygame.Rect(self.x * size, self.y * size, size, size)
             pygame.draw.rect(surface, (0, 255, 0), rect, 1)
+

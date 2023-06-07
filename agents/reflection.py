@@ -1,5 +1,5 @@
 """
-Contains the Reflection class.
+Module containing the Reflection class.
 This module is based on the methods described in:
 
 Park, J. S., O'Brien, J. C., Cai, C. J., Morris, M. R., Liang, P., & Bernstein, M. S. (2023). Generative Agents: Interactive Simulacra of Human Behavior.
