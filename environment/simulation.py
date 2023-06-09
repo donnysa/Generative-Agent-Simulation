@@ -3,6 +3,7 @@ Module containing the simulation in which the agents operate.
 
 Author: Donny Sanders
 """
+import time
 import pygame
 from agents.agent import Agent
 
@@ -28,9 +29,9 @@ class Simulation:
         self.grid = JsonParser.loadGrid(100, width, height)
         self.screen = screen
 
-        RobertoFilipe = Agent(3, 5, "Roberto Filipe")
-        self.agents.append(RobertoFilipe)
-        self.drawables.append(RobertoFilipe)
+        roberto_filipe = Agent(3, 5, "Roberto Filipe")
+        self.agents.append(roberto_filipe)
+        self.drawables.append(roberto_filipe)
         
         self.running = True
 
@@ -46,7 +47,10 @@ class Simulation:
         """
         Updates the simulation state.
         """
-        pass
+        dt = time.time() - self.last_update
+        self.last_update = time.time()
+        for agent in self.agents:
+            agent.update(dt)
 
     def draw(self):
         """
@@ -60,6 +64,7 @@ class Simulation:
         """
         Runs the main loop of the simulation.
         """
+        self.last_update = time.time()
         while self.running:
             self.handle_events()
             self.update()

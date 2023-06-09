@@ -20,6 +20,8 @@ class Grid:
         assert width > 0 and height > 0, "Grid dimensions must be greater than 0."
 
         self.grid_size = grid_size
+        self.grid_width = width 
+        self.grid_height = height
 
         # # Initialize the grid with Tile objects. Right now they are all grass.
         # self.grid = [[Tile(x, y, "grass") for y in range(self.grid_height)] for x in range(self.grid_width)]
