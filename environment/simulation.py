@@ -6,6 +6,7 @@ Author: Donny Sanders
 import time
 import pygame
 from agents.agent import Agent
+from time import *
 
 from util.json_parser import JsonParser
 
@@ -14,6 +15,7 @@ class Simulation:
     Main class representng the simulation.
     Contains grid and handles main simulation loop.
     """
+    debugval = False
     def __init__(self, width, height, screen):
         """
         Initializes the simulation.
@@ -49,8 +51,8 @@ class Simulation:
         """
         dt = time.time() - self.last_update
         self.last_update = time.time()
-        for agent in self.agents:
-            agent.update(dt)
+        # for agent in self.agents:
+            # agent.update(dt)
 
     def draw(self):
         """
@@ -67,6 +69,7 @@ class Simulation:
         self.last_update = time.time()
         while self.running:
             self.handle_events()
+            self.invertBool()
             self.update()
             self.draw()
             pygame.display.flip()
@@ -77,3 +80,30 @@ class Simulation:
         """
         for agent in self.agents:
             agent.state.execute(agent)
+    def invertBool(self):
+        """
+        Inverts debug boolean
+        """
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_DELETE]:
+            self.debug()
+        
+    def debug(self):
+        """
+        Turns on a debug mode that allows the agent to be moved by the user.
+        """
+        keys = pygame.key.get_pressed()
+        assert self.agents.count != 0
+        debugAgent = self.agents[0]
+        if keys[pygame.K_LEFT]:
+            print("moving left")
+            debugAgent.move(-0.1,0)
+        if keys[pygame.K_RIGHT]:
+            debugAgent.move(0.1,0)
+        if keys[pygame.K_UP]:
+            debugAgent.move(0,-0.1)
+        if keys[pygame.K_DOWN]:
+            debugAgent.move(0,0.1)
+            
+            
+        
