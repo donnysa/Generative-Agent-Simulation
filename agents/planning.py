@@ -1,3 +1,12 @@
+"""
+Module containing the Planning class.
+This module is based on the methods described in:
+
+Park, J. S., O'Brien, J. C., Cai, C. J., Morris, M. R., Liang, P., & Bernstein, M. S. (2023). Generative Agents: Interactive Simulacra of Human Behavior.
+[https://arxiv.org/abs/2304.03442]
+
+Author: Donny Sanders
+"""
 class Planning:
     def __init__(self):
         """

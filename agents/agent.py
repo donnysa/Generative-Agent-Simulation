@@ -16,11 +16,11 @@ from agents.memory_stream import MemoryStream
 from agents.planning import Planning
 from agents.reflection import Reflection
 from environment.grid import Grid
-
+from util.pathfinder import Pathfinder
 
 class Agent:
 
-    def __init__(self, x, y, name):
+    def __init__(self, x, y, name, grid):
         """
         Initialize agent with given position, name, occupation, and relationships.
         - x, y: initial position of the agent in the environment.
@@ -49,8 +49,7 @@ class Agent:
         
         self.sprite_sheet = self.load_sprite_sheet()
 
-        # Timestamp of the last update for smooth animation
-        self.last_update = time.time()
+        self.pathfinder = Pathfinder(grid)
         
 
     def move(self, dx, dy):
@@ -72,31 +71,6 @@ class Agent:
             self.direction = "down"
         elif dy < 0:
             self.direction = "up"
-
-    def update(self, dt):
-        """
-        Update the agent's position smoothly towards the target position.
-        """
-        # # Compute the direction towards the target
-        # dx = self.target_x - self.screen_x
-        # dy = self.target_y - self.screen_y
-
-        # # Normalize the direction and scale by the speed
-        # distance = max(1, (dx**2 + dy**2) ** 0.5)
-        # dx /= distance
-        # dy /= distance
-        # dx *= self.speed * dt
-        # dy *= self.speed * dt
-
-        # # Move towards the target, but don't overshoot it
-        # if abs(dx) > abs(self.target_x - self.screen_x):
-        #     self.screen_x = self.target_x
-        # else:
-        #     self.screen_x += dx
-        # if abs(dy) > abs(self.target_y - self.screen_y):
-        #     self.screen_y = self.target_y
-        # else:
-        #     self.screen_y += dy
 
     def draw(self, window, grid_size):
         """

@@ -6,7 +6,6 @@ Author: Donny Sanders
 import time
 import pygame
 from agents.agent import Agent
-from time import *
 
 from util.json_parser import JsonParser
 
@@ -31,7 +30,7 @@ class Simulation:
         self.grid = JsonParser.loadGrid(100, width, height)
         self.screen = screen
 
-        roberto_filipe = Agent(3, 5, "Roberto Filipe")
+        roberto_filipe = Agent(3, 5, "Roberto Filipe", self.grid)
         self.agents.append(roberto_filipe)
         self.drawables.append(roberto_filipe)
         
