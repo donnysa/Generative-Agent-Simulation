@@ -1,25 +1,32 @@
-"""
-Contains the Agent class representing a generative agent.
-This module is based on the methods described in:
-
-Park, J. S., O'Brien, J. C., Cai, C. J., Morris, M. R., Liang, P., & Bernstein, M. S. (2023). Generative Agents: Interactive Simulacra of Human Behavior.
-[https://arxiv.org/abs/2304.03442]
-
-Author: Donny Sanders
-"""
 import os 
 import time
 import pygame
 from heapq import heappop, heappush
-from agent.agent_state import IdleState
-from agent.memory_stream import MemoryStream
-from agent.planning import Planning
-from agent.reflection import Reflection
+from agent_state import IdleState
+from planning import Planning
+from reflection import Reflection
 from environment.grid import Grid
 
 
+from sklearn.preprocessing import MinMaxScaler
+import re
+from typing import NamedTuple
+from datetime import datetime
+from memory_stream import MemoryStream
+from memory import MemoryObject
+from util import embedding, calculate_cosine_similarity
+
+class Score(NamedTuple):
+    score: float
+    memory: MemoryObject
+
 class Agent:
-    def __init__(self, x, y, name):
+
+    RECENCY_ALPHA = 1
+    IMPORTANCE_ALPHA = 1
+    RELEVANCE_ALPHA = 1
+
+    def __init__(self, x, y, name, description: str):
         """
         Initialize agent with given position, name, occupation, and relationships.
         - x, y: initial position of the agent in the environment.
@@ -50,6 +57,92 @@ class Agent:
 
         # Timestamp of the last update for smooth animation
         self.last_update = time.time()
+
+        # Iterate over memory descriptions in the provided 'description' string
+        for mem_description in description.split('.'):
+            # Create a new MemoryObject instance based on the memory description
+            self.memory_stream.memories.append(MemoryObject(mem_description))
+    
+    def add_observation(self, observation: str):
+        self.memory_stream.memories.append(MemoryObject(observation))
+
+
+    def add_memory(self, memory: MemoryObject):
+        """
+        Adds a new memory to the memory stream.
+
+        Parameters:
+        - memory (MemoryObject): The memory to add.
+
+        The `memory` parameter should be an instance of the MemoryObject class, 
+        representing an event that the agent has perceived and wishes to remember.
+        """
+        
+        self.memory_stream.memories.append(memory)
+
+    def calculate_recency(self, memory: MemoryObject, current_time):
+        """
+        Calculates the recency score of a memory object. We treat recency as an exponential decay function
+        over the number of sandbox game hours since the memory was last retrieved. Our decay factor is 0.99.
+
+        Parameters:
+        - memory (MemoryObject): The memory object to calculate the recency score for.
+        - current_time (float): The current time.
+
+        Returns:
+        - float: The recency score of the memory object.
+        """
+        hours_since_last_access = (current_time - memory.most_recent_access_timestamp) / 3600
+        decay_factor = 0.99
+        recency = decay_factor ** hours_since_last_access
+        return recency
+
+    def calculate_relevance(self, memory_embedding, query_embedding):
+        return calculate_cosine_similarity(memory_embedding, query_embedding)
+
+    def retrieve_memories(self, current_situation: str, top_k: int = 5):
+        """
+        Retrieves the most relevant memories based on the current situation.
+        The relevance of a memory is calculated as a combination of the memory's recency, importance, and relevance to the current situation.
+
+        Parameters:
+            query: str, the current situation described in natural language.
+            current_time: float, the current time in Unix timestamp.
+            top_k: int, the number of top relevant memories to return.
+
+
+        Returns:
+        - retrieved_memories (List[MemoryObject]): The most relevant memories.
+        """
+        if not self.memory_stream:
+            return []
+
+        current_situation_embedding = embedding(current_situation)
+        if current_situation_embedding is None:
+            return []
+
+        scored_memories: list[Score] = []
+
+        for memory in self.memory_stream.memories:
+            current_time = datetime.now()
+            recency = MinMaxScaler(self.calculate_recency(memory, current_time), 0, 1)
+            importance = MinMaxScaler(memory.importance, 0, 10)
+            relevance = MinMaxScaler(self.calculate_relevance(memory.embedding, current_situation_embedding), -1, 1)
+
+            score = self.RECENCY_ALPHA * recency + self.IMPORTANCE_ALPHA * importance + self.RELEVANCE_ALPHA * relevance
+            scored_memories.append(Score(score, memory))
+            
+        # Sort the memories by their scores and select the top k memories
+        scored_memories.sort(key=lambda f: f.score, reverse=True)
+        retrieved_memories = [memory[0] for memory in scored_memories[:top_k]]
+
+        # Update the last access time of the retrieved memories
+        for memory in retrieved_memories:
+            memory.access(current_time)
+
+        return retrieved_memories
+
+            
 
     def move(self, dx, dy, environment):
         """
