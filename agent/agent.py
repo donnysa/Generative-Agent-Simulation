@@ -14,7 +14,7 @@ from typing import NamedTuple
 from datetime import datetime
 from memory_stream import MemoryStream
 from memory import MemoryObject
-from util import embedding, calculate_cosine_similarity
+from util import embedding, calculate_cosine_similarity, min_max_normalization
 
 class Score(NamedTuple):
     score: float
@@ -125,20 +125,21 @@ class Agent:
 
         for memory in self.memory_stream.memories:
             current_time = datetime.now()
-            recency = MinMaxScaler(self.calculate_recency(memory, current_time), 0, 1)
-            importance = MinMaxScaler(memory.importance, 0, 10)
-            relevance = MinMaxScaler(self.calculate_relevance(memory.embedding, current_situation_embedding), -1, 1)
+            recency = min_max_normalization(self.calculate_recency(memory, current_time), 0, 1)
+            importance = min_max_normalization(memory.importance, 0, 10)
+            relevance = min_max_normalization(self.calculate_relevance(memory.embedding, current_situation_embedding), -1, 1)
 
             score = self.RECENCY_ALPHA * recency + self.IMPORTANCE_ALPHA * importance + self.RELEVANCE_ALPHA * relevance
             scored_memories.append(Score(score, memory))
             
         # Sort the memories by their scores and select the top k memories
         scored_memories.sort(key=lambda f: f.score, reverse=True)
-        retrieved_memories = [memory[0] for memory in scored_memories[:top_k]]
+        retrieved_memories = [memory for score, memory in scored_memories[:top_k]]
 
         # Update the last access time of the retrieved memories
+        
         for memory in retrieved_memories:
-            memory.access(current_time)
+            memory.access()
 
         return retrieved_memories
 

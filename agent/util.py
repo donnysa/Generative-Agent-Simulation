@@ -5,6 +5,9 @@ MODEL = 'text-embedding-ada-002'
 def embedding(text: str):
     return Embedding.create(model=MODEL, input=text).data[0].embedding
 
+def min_max_normalization(value, min_value, max_value):
+    return (value - min_value) / (max_value - min_value)
+    
 def calculate_cosine_similarity(vector1, vector2):
     """
     Compute the cosine similarity between two vectors.
