@@ -6,6 +6,7 @@ Author: Donny Sanders
 import json
 import os
 import environment.grid as env
+import core.agent 
 
 class JsonParser:
 
@@ -51,11 +52,23 @@ class JsonParser:
         return grid
     
     @staticmethod
-    def loadAgents(grid, num_agents):
+    def loadAgents(grid):
         """
         Loads a list of agents from a JSON file.
         """
-        pass
+        with open(os.path.join("resources", "json", "agents.json"), 'r') as f:
+            agent_json = json.load(f)
+
+        agents = []
+            
+        for agent in agent_json:
+            curr = core.agent.Agent(agent["position"][0], 
+                                    agent["position"][1],
+                                    agent["name"],
+                                    grid)
+            agents.append(curr)
+        
+        return agents
 
     @staticmethod
     def loadObjects(grid):

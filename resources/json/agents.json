@@ -1,0 +1,8 @@
+[
+    {
+        "name": "test",
+        "sprite": "./images/agents/RobertoFilipe.png",
+        "position": [0, 0],
+        "description": "test"
+    }
+]
